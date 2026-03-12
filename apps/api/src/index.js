@@ -1,3 +1,6 @@
+const http = require("http");
+const { getMockWhatsAppConversations } = require("../../../packages/integrations/whatsapp");
+
 const instagramAndTelegramConversations = [
   {
     id: "conv_ig_1",
@@ -78,3 +81,196 @@ const instagramAndTelegramConversations = [
     ],
   },
 ];
+
+let conversationsState = [
+  ...getMockWhatsAppConversations(),
+  ...instagramAndTelegramConversations,
+];
+
+function getAllConversations() {
+  return conversationsState;
+}
+
+function sendReply(conversationId, text) {
+  const conversation = conversationsState.find((item) => item.id === conversationId);
+
+  if (!conversation) {
+    return null;
+  }
+
+  const now = new Date().toISOString();
+
+  const newMessage = {
+    id: `msg_${Date.now()}`,
+    direction: "outbound",
+    from: "agent",
+    text,
+    sentAt: now,
+    channel: conversation.channel,
+  };
+
+  conversation.messages.push(newMessage);
+  conversation.lastMessage = text;
+  conversation.updatedAt = now;
+  conversation.status = "answered";
+
+  return conversation;
+}
+
+function updateLeadStatus(conversationId, status) {
+  const allowedStatuses = ["new", "pending", "interested", "closed"];
+  const conversation = conversationsState.find((item) => item.id === conversationId);
+
+  if (!conversation) {
+    return { error: "Conversation not found", conversation: null };
+  }
+
+  if (!allowedStatuses.includes(status)) {
+    return { error: "Invalid lead status", conversation: null };
+  }
+
+  const now = new Date().toISOString();
+
+  conversation.lead = conversation.lead || {};
+  conversation.lead.status = status;
+  conversation.status = status;
+  conversation.updatedAt = now;
+
+  return { error: null, conversation };
+}
+
+function collectRequestBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", () => {
+      resolve(body);
+    });
+
+    req.on("error", (error) => {
+      reject(error);
+    });
+  });
+}
+
+const server = http.createServer(async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.url === "/") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        ok: true,
+        service: "api",
+        routes: ["/", "/health", "/conversations", "/channels", "/reply", "/lead-status"],
+      })
+    );
+    return;
+  }
+
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: true, service: "api" }));
+    return;
+  }
+
+  if (req.url === "/channels") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        channels: ["whatsapp", "instagram", "telegram"],
+        primary: "whatsapp",
+      })
+    );
+    return;
+  }
+
+  if (req.url === "/conversations" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ conversations: getAllConversations() }));
+    return;
+  }
+
+  if (req.url === "/reply" && req.method === "POST") {
+    try {
+      const rawBody = await collectRequestBody(req);
+      const body = JSON.parse(rawBody || "{}");
+
+      if (!body.conversationId || !body.text) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "conversationId and text are required" }));
+        return;
+      }
+
+      const updatedConversation = sendReply(body.conversationId, body.text);
+
+      if (!updatedConversation) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Conversation not found" }));
+        return;
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ conversation: updatedConversation }));
+      return;
+    } catch (error) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid JSON body" }));
+      return;
+    }
+  }
+
+  if (req.url === "/lead-status" && req.method === "POST") {
+    try {
+      const rawBody = await collectRequestBody(req);
+      const body = JSON.parse(rawBody || "{}");
+
+      if (!body.conversationId || !body.status) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "conversationId and status are required" }));
+        return;
+      }
+
+      const result = updateLeadStatus(body.conversationId, body.status);
+
+      if (result.error === "Conversation not found") {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: result.error }));
+        return;
+      }
+
+      if (result.error) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: result.error }));
+        return;
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ conversation: result.conversation }));
+      return;
+    } catch (error) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid JSON body" }));
+      return;
+    }
+  }
+
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ error: "Not found" }));
+});
+
+server.listen(3001, () => {
+  console.log("API running on http://localhost:3001");
+});

@@ -21,10 +21,46 @@ function channelLabel(channel) {
   return channel;
 }
 
+function statusLabel(status) {
+  if (status === "new") return "Nuevo";
+  if (status === "pending") return "Pendiente";
+  if (status === "interested") return "Interesado";
+  if (status === "closed") return "Cerrado";
+  if (status === "answered") return "Respondido";
+  return status;
+}
+
 function replaceConversation(updatedConversation) {
   conversationsState = conversationsState.map((conversation) =>
     conversation.id === updatedConversation.id ? updatedConversation : conversation
   );
+}
+
+async function updateLeadStatus(conversationId, status) {
+  try {
+    const response = await fetch("http://localhost:3001/lead-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        conversationId,
+        status,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "No se pudo actualizar el estado");
+    }
+
+    replaceConversation(data.conversation);
+    renderConversations(conversationsState);
+    renderChatDetail(data.conversation);
+  } catch (error) {
+    alert(`Error al actualizar estado: ${error.message}`);
+  }
 }
 
 function renderChatDetail(conversation) {
@@ -42,7 +78,7 @@ function renderChatDetail(conversation) {
             Canal: <span class="channel-badge ${conversation.channel}">${channelLabel(conversation.channel)}</span>
             · Asunto: ${conversation.subject}
           </div>
-          <div class="status">Estado: ${conversation.status}</div>
+          <div class="status">Estado: ${statusLabel(conversation.status)}</div>
         </div>
 
         <div class="chat-messages" id="chatMessages">
@@ -97,7 +133,7 @@ function renderChatDetail(conversation) {
 
         <div class="info-group">
           <div class="info-label">Estado lead</div>
-          <div class="info-value">${conversation.lead?.status || "Sin definir"}</div>
+          <div class="info-value">${statusLabel(conversation.lead?.status || "new")}</div>
         </div>
 
         <div class="info-group">
@@ -113,6 +149,16 @@ function renderChatDetail(conversation) {
         <div class="info-group">
           <div class="info-label">Última actualización</div>
           <div class="info-value">${formatDate(conversation.updatedAt)}</div>
+        </div>
+
+        <div class="lead-actions">
+          <div class="info-label">Acciones rápidas</div>
+          <div class="lead-action-buttons">
+            <button class="lead-btn" data-status="new">Nuevo</button>
+            <button class="lead-btn" data-status="pending">Pendiente</button>
+            <button class="lead-btn" data-status="interested">Interesado</button>
+            <button class="lead-btn" data-status="closed">Cerrar</button>
+          </div>
         </div>
       </aside>
     </div>
@@ -152,6 +198,12 @@ function renderChatDetail(conversation) {
       alert(`Error al enviar: ${error.message}`);
     }
   });
+
+  document.querySelectorAll(".lead-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      updateLeadStatus(conversation.id, button.dataset.status);
+    });
+  });
 }
 
 function selectConversation(conversationId) {
@@ -178,7 +230,7 @@ function renderConversations(conversations) {
           </div>
           <div class="meta">Asunto: ${conversation.subject}</div>
           <div>${conversation.lastMessage}</div>
-          <div class="status">Estado: ${conversation.status}</div>
+          <div class="status">Estado: ${statusLabel(conversation.status)}</div>
         </div>
       `
     )

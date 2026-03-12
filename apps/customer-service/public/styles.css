@@ -261,6 +261,30 @@ button:hover {
   font-weight: 500;
 }
 
+.lead-actions {
+  margin-top: 18px;
+}
+
+.lead-action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lead-btn {
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #1f2937;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.lead-btn:hover {
+  background: #f3f4f6;
+}
+
 @media (max-width: 1100px) {
   .chat-layout {
     grid-template-columns: 1fr;
