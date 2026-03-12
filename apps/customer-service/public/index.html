@@ -24,8 +24,34 @@
         </header>
 
         <section class="workspace">
-          <div id="conversationList" class="panel conversation-list-panel">
-            Todavía no cargaste conversaciones.
+          <div class="panel conversation-list-panel">
+            <div class="filters">
+              <div class="filter-group">
+                <label for="channelFilter">Canal</label>
+                <select id="channelFilter">
+                  <option value="all">Todos</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="telegram">Telegram</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="statusFilter">Estado</label>
+                <select id="statusFilter">
+                  <option value="all">Todos</option>
+                  <option value="new">Nuevo</option>
+                  <option value="pending">Pendiente</option>
+                  <option value="interested">Interesado</option>
+                  <option value="closed">Cerrado</option>
+                  <option value="answered">Respondido</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="conversationList">
+              Todavía no cargaste conversaciones.
+            </div>
           </div>
 
           <div id="chatDetail" class="panel chat-detail">

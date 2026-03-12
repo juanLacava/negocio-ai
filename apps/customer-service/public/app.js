@@ -1,6 +1,8 @@
 const loadBtn = document.getElementById("loadBtn");
 const conversationList = document.getElementById("conversationList");
 const chatDetail = document.getElementById("chatDetail");
+const channelFilter = document.getElementById("channelFilter");
+const statusFilter = document.getElementById("statusFilter");
 
 let conversationsState = [];
 let selectedConversationId = null;
@@ -36,6 +38,21 @@ function replaceConversation(updatedConversation) {
   );
 }
 
+function getFilteredConversations() {
+  const selectedChannel = channelFilter.value;
+  const selectedStatus = statusFilter.value;
+
+  return conversationsState.filter((conversation) => {
+    const matchesChannel =
+      selectedChannel === "all" || conversation.channel === selectedChannel;
+
+    const matchesStatus =
+      selectedStatus === "all" || conversation.status === selectedStatus;
+
+    return matchesChannel && matchesStatus;
+  });
+}
+
 async function updateLeadStatus(conversationId, status) {
   try {
     const response = await fetch("http://localhost:3001/lead-status", {
@@ -56,8 +73,7 @@ async function updateLeadStatus(conversationId, status) {
     }
 
     replaceConversation(data.conversation);
-    renderConversations(conversationsState);
-    renderChatDetail(data.conversation);
+    refreshUIAfterUpdate(data.conversation.id);
   } catch (error) {
     alert(`Error al actualizar estado: ${error.message}`);
   }
@@ -192,8 +208,7 @@ function renderChatDetail(conversation) {
       }
 
       replaceConversation(data.conversation);
-      renderConversations(conversationsState);
-      renderChatDetail(data.conversation);
+      refreshUIAfterUpdate(data.conversation.id);
     } catch (error) {
       alert(`Error al enviar: ${error.message}`);
     }
@@ -206,17 +221,37 @@ function renderChatDetail(conversation) {
   });
 }
 
+function refreshUIAfterUpdate(preferredConversationId = null) {
+  const filtered = getFilteredConversations();
+
+  if (!filtered.length) {
+    selectedConversationId = null;
+    renderConversations([]);
+    renderChatDetail(null);
+    return;
+  }
+
+  const stillSelected = filtered.find((item) => item.id === selectedConversationId);
+  const preferred = filtered.find((item) => item.id === preferredConversationId);
+
+  const nextConversation = stillSelected || preferred || filtered[0];
+  selectedConversationId = nextConversation.id;
+
+  renderConversations(filtered);
+  renderChatDetail(nextConversation);
+}
+
 function selectConversation(conversationId) {
   selectedConversationId = conversationId;
-  const selected = conversationsState.find((item) => item.id === conversationId);
-  renderConversations(conversationsState);
+  const filtered = getFilteredConversations();
+  const selected = filtered.find((item) => item.id === conversationId) || null;
+  renderConversations(filtered);
   renderChatDetail(selected);
 }
 
 function renderConversations(conversations) {
   if (!conversations.length) {
-    conversationList.innerHTML = "<p>No hay conversaciones.</p>";
-    chatDetail.innerHTML = "<p>No hay conversaciones para mostrar.</p>";
+    conversationList.innerHTML = "<p>No hay conversaciones para esos filtros.</p>";
     return;
   }
 
@@ -252,8 +287,7 @@ async function loadConversations() {
     const data = await response.json();
     conversationsState = data.conversations || [];
     selectedConversationId = conversationsState[0]?.id || null;
-    renderConversations(conversationsState);
-    renderChatDetail(conversationsState[0] || null);
+    refreshUIAfterUpdate(selectedConversationId);
   } catch (error) {
     conversationList.innerHTML = `<p>Error al cargar conversaciones: ${error.message}</p>`;
     chatDetail.innerHTML = "<p>No se pudo cargar el detalle.</p>";
@@ -261,3 +295,11 @@ async function loadConversations() {
 }
 
 loadBtn.addEventListener("click", loadConversations);
+
+channelFilter.addEventListener("change", () => {
+  refreshUIAfterUpdate(selectedConversationId);
+});
+
+statusFilter.addEventListener("change", () => {
+  refreshUIAfterUpdate(selectedConversationId);
+});
