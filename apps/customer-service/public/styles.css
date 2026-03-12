@@ -59,78 +59,14 @@ button {
   cursor: pointer;
 }
 
-.panel {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+button:hover {
+  opacity: 0.95;
 }
 
-pre {
-  background: #f3f4f6;
-  padding: 16px;
-  border-radius: 8px;
-  overflow: auto;
-}
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f7fb;
-  color: #1f2937;
-}
-
-.app {
-  display: flex;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 220px;
-  background: #111827;
-  color: white;
-  padding: 24px;
-}
-
-.sidebar h1 {
-  margin-top: 0;
-  font-size: 22px;
-}
-
-.sidebar nav {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.sidebar a {
-  color: #d1d5db;
-  text-decoration: none;
-}
-
-.content {
-  flex: 1;
-  padding: 24px;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-button {
-  border: 0;
-  padding: 10px 14px;
-  background: #2563eb;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
+.workspace {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 20px;
 }
 
 .panel {
@@ -140,11 +76,11 @@ button {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-.conversation-list {
+.conversation-list-panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
+  min-height: 500px;
 }
 
 .conversation-card {
@@ -152,6 +88,16 @@ button {
   border-radius: 10px;
   padding: 14px;
   background: #fafafa;
+  cursor: pointer;
+}
+
+.conversation-card:hover {
+  background: #f3f4f6;
+}
+
+.conversation-card.active {
+  border-color: #2563eb;
+  background: #eff6ff;
 }
 
 .conversation-card h3 {
@@ -172,4 +118,123 @@ button {
   background: #e5e7eb;
   font-size: 12px;
   margin-top: 8px;
+}
+
+.channel-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.channel-badge.whatsapp {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.channel-badge.instagram {
+  background: #fae8ff;
+  color: #86198f;
+}
+
+.channel-badge.telegram {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.chat-detail {
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.chat-header h3 {
+  margin: 0 0 6px;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.message {
+  max-width: 70%;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.message.customer {
+  background: #f3f4f6;
+  align-self: flex-start;
+}
+
+.message.agent {
+  background: #dbeafe;
+  align-self: flex-end;
+}
+
+.message-channel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+.reply-form {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.reply-input {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 12px;
+  font: inherit;
+  background: white;
+  color: #1f2937;
+}
+
+.reply-input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 16px;
+  }
 }
