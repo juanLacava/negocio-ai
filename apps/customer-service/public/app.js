@@ -34,43 +34,88 @@ function renderChatDetail(conversation) {
   }
 
   chatDetail.innerHTML = `
-    <div class="chat-header">
-      <h3>${conversation.customer.name}</h3>
-      <div class="meta">
-        Canal: <span class="channel-badge ${conversation.channel}">${channelLabel(conversation.channel)}</span>
-        · Asunto: ${conversation.subject}
-      </div>
-      <div class="meta">
-        Usuario externo: ${conversation.customer.externalUserId}
-      </div>
-      <div class="status">Estado: ${conversation.status}</div>
-    </div>
+    <div class="chat-layout">
+      <div class="chat-main">
+        <div class="chat-header">
+          <h3>${conversation.customer.name}</h3>
+          <div class="meta">
+            Canal: <span class="channel-badge ${conversation.channel}">${channelLabel(conversation.channel)}</span>
+            · Asunto: ${conversation.subject}
+          </div>
+          <div class="status">Estado: ${conversation.status}</div>
+        </div>
 
-    <div class="chat-messages" id="chatMessages">
-      ${conversation.messages
-        .map(
-          (message) => `
-            <div class="message ${message.from}">
-              <div class="message-channel">${channelLabel(message.channel)}</div>
-              <div>${message.text}</div>
-              <div class="message-time">${formatDate(message.sentAt)}</div>
-            </div>
-          `
-        )
-        .join("")}
-    </div>
+        <div class="chat-messages" id="chatMessages">
+          ${conversation.messages
+            .map(
+              (message) => `
+                <div class="message ${message.from}">
+                  <div class="message-channel">${channelLabel(message.channel)}</div>
+                  <div>${message.text}</div>
+                  <div class="message-time">${formatDate(message.sentAt)}</div>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
 
-    <form id="replyForm" class="reply-form">
-      <textarea
-        id="replyInput"
-        class="reply-input"
-        placeholder="Escribí una respuesta..."
-        rows="3"
-      ></textarea>
-      <div class="reply-actions">
-        <button type="submit">Enviar</button>
+        <form id="replyForm" class="reply-form">
+          <textarea
+            id="replyInput"
+            class="reply-input"
+            placeholder="Escribí una respuesta..."
+            rows="3"
+          ></textarea>
+          <div class="reply-actions">
+            <button type="submit">Enviar</button>
+          </div>
+        </form>
       </div>
-    </form>
+
+      <aside class="customer-panel">
+        <h4>Cliente y lead</h4>
+
+        <div class="info-group">
+          <div class="info-label">Nombre</div>
+          <div class="info-value">${conversation.customer.name}</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Canal</div>
+          <div class="info-value">${channelLabel(conversation.channel)}</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Usuario externo</div>
+          <div class="info-value">${conversation.customer.externalUserId}</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Teléfono</div>
+          <div class="info-value">${conversation.customer.phone || "No disponible"}</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Estado lead</div>
+          <div class="info-value">${conversation.lead?.status || "Sin definir"}</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Interés</div>
+          <div class="info-value">${conversation.lead?.interest || "Sin definir"}</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Prioridad</div>
+          <div class="info-value">${conversation.lead?.priority || "Normal"}</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Última actualización</div>
+          <div class="info-value">${formatDate(conversation.updatedAt)}</div>
+        </div>
+      </aside>
+    </div>
   `;
 
   const replyForm = document.getElementById("replyForm");

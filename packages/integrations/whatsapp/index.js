@@ -8,6 +8,13 @@ function getMockWhatsAppConversations() {
         id: "cust_wa_1",
         name: "María Fernández",
         externalUserId: "54911xxxx0001",
+        phone: "+54 9 11 5555 0001",
+      },
+      lead: {
+        status: "new",
+        source: "whatsapp",
+        interest: "terapia individual",
+        priority: "media",
       },
       subject: "Consulta por terapia individual",
       lastMessage: "Quería saber honorarios y disponibilidad para la semana próxima.",
