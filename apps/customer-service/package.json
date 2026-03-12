@@ -1,0 +1,12 @@
+{
+  "name": "@negocio-ai/customer-service",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node src/index.js",
+    "build": "echo build customer-service",
+    "lint": "echo lint customer-service",
+    "typecheck": "echo typecheck customer-service",
+    "test": "echo test customer-service"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@negocio-ai/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node src/index.js",
+    "build": "echo build api",
+    "lint": "echo lint api",
+    "typecheck": "echo typecheck api",
+    "test": "echo test api"
+  }
+}
